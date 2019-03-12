@@ -129,15 +129,19 @@ int framesearch(int fts, int first, off64_t& retpos, off64_t& retpts, off64_t& r
           st = (p - buf) - ind + 1;
           sdflag = 1;
           return 1; 
-        } else if (!sdflag && p[3]==0x09 && (buf[ind+1] & 0x40)) { // H264
-          if ((p[4] >> 5)==0) {
+        } else if (!sdflag && (p[3]==0x09 || p[3]==0x46) && (buf[ind+1] & 0x40)) { // H264, H265
+          if ((p[3]==0x09 && p[4] >> 5==0) || (p[3]==0x46 && p[5] >> 5==0)) {
             retpts = framepts(buf, ind);
             retpos = pos + ind;
           } else {
             retpts = -1;
             retpos = -1;
           }
-          retdat = p[3] | (p[4]<<8);
+          if (p[3]==0x09) {
+            retdat = p[3] | (p[4]<<8);
+          } else {
+            retdat = p[3] | (p[5]<<8);
+          }
           retpos2 = pos + (p - buf);
           st = (p - buf) - ind + 1;
           return 1; 
